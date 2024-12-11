@@ -28,8 +28,6 @@ public class VendorService implements Runnable {
     int customerReleaseRate = configuration.getCustomerReleaseRate();
     int ticketPoolCapacity =configuration.getTotalTickets();
 
-
-
     public static int getTotalTicketsReleased() {
         return totalTicketsReleased.get(); // Provide access to the current value
     }
@@ -38,14 +36,15 @@ public class VendorService implements Runnable {
     @Override
     public void run() {
         while (true) {
-            System.out.println(totalTickets);
-            System.out.println(ticketReleaseRate);
-            System.out.println(customerReleaseRate);
-            System.out.println(ticketPoolCapacity);
+            System.out.println(totalTickets+"tickets");
+            System.out.println(ticketReleaseRate+"release");
+            System.out.println(customerReleaseRate+"customer");
+            System.out.println(ticketPoolCapacity+"maxcapcity");
             synchronized (ticketPoolService) {
                 if (totalTicketsReleased.get() < ticketPoolCapacity) {
                     break;
                 }
+
                 else if (ticketPoolService.getCurrentPoolSize() + 1 <= ticketPoolCapacity) {
                     totalTicketsReleased.incrementAndGet();
                     ticketPoolService.addTicket(totalTicketsReleased, ticketPoolCapacity);
@@ -56,6 +55,7 @@ public class VendorService implements Runnable {
                         logger.warning(e.getMessage());
                     }
                 }
+
                 else {
                     System.out.println("Ticket pool is full, waiting for cutsomers...");
                     try {

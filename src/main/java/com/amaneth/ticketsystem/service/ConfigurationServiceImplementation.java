@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class ConfigurationServiceImplementation implements ConfigurationService {
 
     private static final Logger logger = Logger.getLogger(ConfigurationServiceImplementation.class.getName());
-    private static final String CONFIG_DIRECTORY = "./configurations"; // Directory to store JSON files
+    private static final String CONFIG_DIRECTORY = "configurations"; // Directory to store JSON files
 
     public ConfigurationServiceImplementation() {
         File directory = new File(CONFIG_DIRECTORY);
@@ -35,6 +35,10 @@ public class ConfigurationServiceImplementation implements ConfigurationService 
         try (FileWriter writer = new FileWriter(fileName)) {
             gson.toJson(configuration, writer);
             System.out.println("Configuration settings are successfully saved to " + fileName);
+            logger.warning(configuration.getTotalTickets() + " tickets");
+            logger.warning(configuration.getTicketReleaseRate()+" ticker Release rate");
+            logger.warning(configuration.getCustomerReleaseRate()+" customer Release rate");
+            System.out.println(configuration.getMaxTicketCapacity()+" max Ticket Capacity");
             logger.info("Configuration settings saved to " + fileName);
         } catch (IOException e) {
             System.out.println("ERROR: " + e.getMessage());
@@ -43,23 +47,28 @@ public class ConfigurationServiceImplementation implements ConfigurationService 
     }
 
     public Configuration loadConfigurationFromGsonFile(String fileName) {
+        File file = new File(fileName); // Load from the configurations directory
         Gson gson = new Gson();
-        Configuration configuration = new Configuration();
-        String filePath = String.format("/%s", fileName);
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            Configuration config = gson.fromJson(reader, Configuration.class);
-            System.out.println("Configuration settings successfully loaded from " + filePath);
-            logger.info("Configuration settings loaded from " + filePath);
-            return config;
+        Configuration configuration = null;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            configuration = gson.fromJson(reader, Configuration.class);
+            System.out.println("Configuration settings are successfully saved to " + fileName);
+            logger.warning(configuration.getTotalTickets() + " tickets");
+            logger.warning(configuration.getTicketReleaseRate()+" ticker Release rate");
+            logger.warning(configuration.getCustomerReleaseRate()+" customer Release rate");
+            System.out.println(configuration.getMaxTicketCapacity()+" max Ticket Capacity");
+            logger.info("Configuration settings loaded from " + file.getAbsolutePath());
         } catch (FileNotFoundException e) {
             System.out.println("ERROR: The file " + fileName + " does not exist.");
-            logger.warning("File not found: " + filePath);
+            logger.warning("File not found: " + file.getAbsolutePath());
         } catch (IOException e) {
             System.out.println("ERROR: An error occurred while reading the file.");
-            logger.log(Level.SEVERE, "Error reading the file " + filePath, e);
+            logger.log(Level.SEVERE, "Error reading the file " + file.getAbsolutePath(), e);
         }
-        return null;
+        return configuration;
     }
+
 
     public List<String> listAllConfigurations() {
         File folder = new File(CONFIG_DIRECTORY);

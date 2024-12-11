@@ -12,28 +12,23 @@ public class ConfigurationController {
 
     private final ConfigurationServiceImplementation configService;
 
-
     public ConfigurationController(ConfigurationServiceImplementation configService) {
         this.configService = configService;
     }
 
     @PostMapping("/save")
+//@RequestBody= Spring Boot converts this JSON into a Configuration object and passes it as the configuration parameter.
     public Configuration saveConfiguration(@RequestBody Configuration configuration) {
         return configService.saveConfiguration(configuration);
-
     }
 
     @GetMapping("/load")
-    public String loadConfiguration(@RequestParam String fileName) {
-         configService.loadConfigurationFromGsonFile(fileName);
-
-    return "filename: " + fileName;
+    public Configuration loadConfiguration(@RequestParam String fileName) {
+        return configService.loadConfigurationFromGsonFile(fileName);
     }
 
     @GetMapping("/list")
     public List<String> listAllConfigurations() {
         return configService.listAllConfigurations();
     }
-
-
 }

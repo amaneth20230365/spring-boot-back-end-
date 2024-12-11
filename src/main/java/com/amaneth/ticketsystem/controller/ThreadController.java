@@ -2,7 +2,7 @@ package com.amaneth.ticketsystem.controller;
 
 import com.amaneth.ticketsystem.model.Configuration;
 import com.amaneth.ticketsystem.repository.TicketPoolRepository;
-import com.amaneth.ticketsystem.service.ConfigurationServiceImplementation;
+import com.amaneth.ticketsystem.service.ConfigurationService;
 import com.amaneth.ticketsystem.service.CustomerService;
 import com.amaneth.ticketsystem.service.TicketPoolService;
 import com.amaneth.ticketsystem.service.VendorService;
@@ -15,14 +15,14 @@ import java.util.logging.Logger;
 @RestController
 @RequestMapping("/api/threadController")
 public class ThreadController {
-    private final ConfigurationServiceImplementation configurationServiceImplementation;
+    private final ConfigurationService configurationServiceImplementation;
     private final TicketPoolRepository ticketPoolRepository;
     private final TicketPoolService ticketPoolService;
 
     // gets the full name with package name
 
 
-    public ThreadController(ConfigurationServiceImplementation configService, TicketPoolRepository ticketPoolRepository, TicketPoolService ticketPoolService) {
+    public ThreadController(ConfigurationService configService, TicketPoolRepository ticketPoolRepository, TicketPoolService ticketPoolService) {
         this.configurationServiceImplementation = configService;
         this.ticketPoolRepository = ticketPoolRepository;
         this.ticketPoolService = ticketPoolService;
@@ -41,13 +41,13 @@ public class ThreadController {
         Thread thread2 = new Thread(vendorService1);
         thread2.start();
 
-//        CustomerService customerService = new CustomerService(configurationServiceImplementation, ticketPoolService);
-//        Thread thread3 = new Thread(customerService);
-//        thread3.start();
-//
-//        CustomerService customerService2 = new CustomerService(configurationServiceImplementation, ticketPoolService);
-//        Thread thread4 = new Thread(customerService2);
-//        thread4.start();
+        CustomerService customerService = new CustomerService(configurationServiceImplementation, ticketPoolService);
+        Thread thread3 = new Thread(customerService);
+        thread3.start();
+
+        CustomerService customerService2 = new CustomerService(configurationServiceImplementation, ticketPoolService);
+        Thread thread4 = new Thread(customerService2);
+        thread4.start();
         return "success";
     }
 }
