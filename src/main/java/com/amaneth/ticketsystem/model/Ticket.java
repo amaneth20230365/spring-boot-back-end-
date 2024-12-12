@@ -1,6 +1,12 @@
 package com.amaneth.ticketsystem.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+
+@Entity
 public class Ticket {
+    @Id
     private int ticketId;
     private int vendorId;
     private int customerId;

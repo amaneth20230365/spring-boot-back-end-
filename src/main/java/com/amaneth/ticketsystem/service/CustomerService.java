@@ -7,49 +7,54 @@ import static com.amaneth.ticketsystem.service.VendorService.getTotalTicketsRele
 import static com.amaneth.ticketsystem.service.VendorService.totalTicketsReleased;
 
 @Service
-public class CustomerService implements Runnable{
-    private ConfigurationService configService;
-    private TicketPoolService ticketPoolService;
+public class CustomerService implements Runnable {
+    private final TicketPoolService ticketPoolService;
 
-    public CustomerService(ConfigurationService configService, TicketPoolService ticketPoolService) {
-        this.configService = configService;
+    private int totalTickets;
+    private int ticketReleaseRate;
+    private int customerReleaseRate;
+
+    public CustomerService(TicketPoolService ticketPoolService) {
         this.ticketPoolService = ticketPoolService;
+    }
+
+    // Setters for dynamic configuration
+    public void setTotalTickets(int totalTickets) {
+        this.totalTickets = totalTickets;
+    }
+
+    public void setTicketReleaseRate(int ticketReleaseRate) {
+        this.ticketReleaseRate = ticketReleaseRate;
+    }
+
+    public void setCustomerReleaseRate(int customerReleaseRate) {
+        this.customerReleaseRate = customerReleaseRate;
     }
 
     @Override
     public void run() {
-        try{
-            Configuration configuration = new Configuration();
-
-            int totalTickets = configuration.getTotalTickets();
-            int ticketReleaseRate = configuration.getTicketReleaseRate();
-            int customerReleaseRate = configuration.getCustomerReleaseRate();
-            int ticketPoolCapacity = configuration.getTotalTickets();
-
-            VendorService vendorService = new VendorService(configService, ticketPoolService);
-            while (getTotalTicketsReleased() != totalTickets || ticketPoolService.getCurrentPoolSize() > 0){
+        try {
+            while (getTotalTicketsReleased() != totalTickets || ticketPoolService.getCurrentPoolSize() > 0) {
                 try {
-                    synchronized (ticketPoolService){
-                        if ((ticketPoolService.getCurrentPoolSize())>0){
+                    synchronized (ticketPoolService) {
+                        if (ticketPoolService.getCurrentPoolSize() > 0) {
                             ticketPoolService.removeTicket();
                             Thread.sleep(customerReleaseRate);
-                        }else{
-                            if(totalTicketsReleased.get() ==totalTickets && ticketPoolService.getCurrentPoolSize() == 0){
+                        } else {
+                            if (totalTicketsReleased.get() == totalTickets && ticketPoolService.getCurrentPoolSize() == 0) {
                                 break;
-                            }
-                            else {
-                                System.out.println("No tickets Left. ");
+                            } else {
+                                System.out.println("No tickets left.");
                                 ticketPoolService.wait();
                             }
                         }
                     }
-                }catch (Exception e){
-                    System.out.println("ERROR: When consuming Ticket"+e.getMessage());
+                } catch (InterruptedException e) {
+                    System.out.println("ERROR: When consuming ticket " + e.getMessage());
                 }
-
             }
-        } catch (Exception e){
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
         }
     }
 }

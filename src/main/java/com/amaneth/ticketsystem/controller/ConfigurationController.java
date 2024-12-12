@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/configurations")
+@CrossOrigin("http://localhost:3000")
 public class ConfigurationController {
 
     private final ConfigurationServiceImplementation configService;

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -13,9 +14,11 @@ import java.util.logging.Logger;
 @Service
 public class TicketPoolService {
     private final ConfigurationService configurationService;
+    private final ConcurrentLinkedDeque<String> simulationLogs = new ConcurrentLinkedDeque<String>();
 
     public TicketPoolService(ConfigurationService configurationService) {
         this.configurationService = configurationService;
+
     }
     List<Ticket> ticketsList = Collections.synchronizedList(new ArrayList<>());
 
@@ -25,25 +28,30 @@ public class TicketPoolService {
         return ticketsList.size();
     }
 
-    public synchronized void addTicket(AtomicInteger totalTicketsReleased, int ticketPoolCapacity) {
+    public synchronized void addTicket(AtomicInteger totalTicketReleased, int ticketPoolCapacity,int vendorId) {
         if (ticketsList.size() + 1 > ticketPoolCapacity) {
             try {
-                System.out.println("TicketPool is full.");
-                System.out.println("Waiting");
+                String message ="TicketPool is full. Waiting";
+                System.out.println(message);
+                simulationLogs.add(message);
                 logger.info("TicketPool is full., waiting...");
                 wait(); // Wait until there's space in the pool
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("Vendor was interrupted while waiting to add tickets.");
+
                 logger.warning("ERROR: "+e.getMessage());
             }
         }else if (ticketsList.size()+ 1 <= ticketPoolCapacity) {
             for (int i = 0; i < 1; i++) {
-                Ticket ticket = new Ticket(1,1,1);
+                int ticketId = totalTicketReleased.get();
+                Ticket ticket = new Ticket(ticketId,vendorId,1);
                 ticketsList.add(ticket);
-                System.out.println("Vendor added 1 ticket. Current pool size: " + ticketsList.size()+". Total tickets released: "+totalTicketsReleased);
-                logger.info("Vendor added 1 ticket. Current pool size: " + ticketsList.size()+". Total tickets released: "+totalTicketsReleased);
+                String message ="Vendor added 1 ticket. Current pool size: " + ticketsList.size()+". Total tickets released: "+ticketId;
+                System.out.println(message);
+                simulationLogs.add(message);
+                logger.info("Vendor added 1 ticket. Current pool size: " + ticketsList.size()+". Total tickets released: "+ticketId);
                 notifyAll(); // Notify all waiting threads (likely customers)
             }
         }
@@ -52,8 +60,9 @@ public class TicketPoolService {
     public synchronized void removeTicket() {
         while (ticketsList.isEmpty()){
             try{
-                System.out.println("TicketPool is empty. No available tickets.");
-                System.out.println(" is waiting.");
+                String message="TicketPool is empty. No available tickets. Waiting...";
+                System.out.println(message);
+                simulationLogs.add(message);
                 logger.info("TicketPool is empty. No available tickets.");
                 wait();
             }catch (InterruptedException e){
@@ -63,8 +72,14 @@ public class TicketPoolService {
         for (int i = 0; i < 1; i++) {
             ticketsList.remove(0);
         }
-        System.out.println(" bought 1 ticket. Current Pool size: "+ticketsList.size());
+        String message=" bought 1 ticket. Current Pool size: "+ticketsList.size();
+        System.out.println(message);
+        simulationLogs.add(message);
         logger.info(" bought 1 ticket. Current pool size: "+ticketsList.size());
         notifyAll();
+    }
+
+    public ConcurrentLinkedDeque<String> getSimulationLogs() {
+        return simulationLogs;
     }
 }
